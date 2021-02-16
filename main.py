@@ -9,7 +9,7 @@ from controll import get_state, init, command
 # Subscription callback
 def sub_cb(topic, msg, retained):
     print((topic, msg, retained))
-    if topic == b"homeassistant/climate/{}/command".format(mac):
+    if topic == b"micropython/{}/command".format(mac):
         command(msg.decode())
         asyncio.create_task(publish_status())
 
@@ -19,7 +19,7 @@ async def wifi_han(state):
 
 # If you connect with clean_session True, must re-subscribe (MQTT spec 3.1.2.4)
 async def conn_han(client):
-    await client.subscribe("homeassistant/climate/{}/command".format(mac), 1)
+    await client.subscribe("micropython/{}/command".format(mac), 1)
 
 async def mqtt():
     while not client.isconnected():
@@ -33,7 +33,7 @@ async def mqtt():
             
     while True:
         await client.publish('homeassistant/climate/{}/config'.format(mac), json.dumps({
-            "~": "homeassistant/climate/{}".format(mac),
+            "~": "micropython/{}".format(mac),
             "name": "Winefridge Upper Compartment",
             "min_temp": 5,
             "max_temp": 20,
@@ -63,8 +63,8 @@ async def mqtt():
 
 
 async def publish_status():
-    await client.publish('homeassistant/climate/{}/availability'.format(mac), 'online')
-    await client.publish('homeassistant/climate/{}/state'.format(mac), json.dumps(get_state()))
+    await client.publish('micropython/{}/availability'.format(mac), 'online')
+    await client.publish('micropython/{}/state'.format(mac), json.dumps(get_state()))
 
 # mac adress
 mac = ubinascii.hexlify(network.WLAN().config('mac')).decode()
@@ -74,7 +74,7 @@ config['subs_cb'] = sub_cb
 config['wifi_coro'] = wifi_han
 config['connect_coro'] = conn_han
 config['clean'] = True
-config['will'] = ('homeassistant/climate/{}/availability'.format(mac), "offline", True, 1)
+config['will'] = ('micropython/{}/availability'.format(mac), "offline", True, 1)
 
 # Set up client
 MQTTClient.DEBUG = True  # Optional
