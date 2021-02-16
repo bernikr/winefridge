@@ -37,7 +37,8 @@ class HassIntegration:
     def sub_cb(self, topic, msg, retained):
         print((topic, msg, retained))
         if topic == b"micropython/{}/command".format(self.mac):
-            self.command_cb(msg.decode())
+            cmd, arg = msg.decode().split(':')
+            self.command_cb(cmd, arg)
             asyncio.create_task(self.publish_status())
 
     async def wifi_han(self, state):

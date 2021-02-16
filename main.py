@@ -30,8 +30,7 @@ def get_state():
     }
 
 
-def command(cmd_sting):
-    cmd, arg = cmd_sting.split(':')
+def command(cmd, arg):
     if cmd == 'target':
         settings['target'] = float(arg)
         print('set target to {}'.format(settings['target']))
