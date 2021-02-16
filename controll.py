@@ -1,5 +1,7 @@
 import json
+
 settings = None
+
 
 def init():
     global settings
@@ -10,16 +12,19 @@ def init():
         settings = {'on': False, 'target': 10}
         save_settings()
 
+
 def save_settings():
     with open('settings.json', 'w') as settings_file:
         json.dump(settings, settings_file)
 
+
 def get_state():
     return {
-            "mode": "cool" if settings['on'] else "off",
-            "target_temp": settings['target'],
-            "current_temp": 15,
-        }
+        "mode": "cool" if settings['on'] else "off",
+        "target_temp": settings['target'],
+        "current_temp": 15,
+    }
+
 
 def command(cmd_sting):
     cmd, arg = cmd_sting.split(':')
