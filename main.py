@@ -3,6 +3,7 @@ import uasyncio as asyncio
 from config import *
 import json
 import ubinascii
+import network
 from controll import get_state, init, command
 
 # Subscription callback
@@ -10,11 +11,11 @@ def sub_cb(topic, msg, retained):
     print((topic, msg, retained))
     if topic == b"homeassistant/climate/{}/command".format(mac):
         command(msg.decode())
-        loop.create_task(publish_status())
+        asyncio.create_task(publish_status())
 
 async def wifi_han(state):
     print('Wifi is ', 'up' if state else 'down')
-    await asyncio.sleep(1)
+    await publish_status()
 
 # If you connect with clean_session True, must re-subscribe (MQTT spec 3.1.2.4)
 async def conn_han(client):
@@ -31,7 +32,6 @@ async def mqtt():
             await asyncio.sleep(10)
             
     while True:
-        await asyncio.sleep(5)
         await client.publish('homeassistant/climate/{}/config'.format(mac), json.dumps({
             "~": "homeassistant/climate/{}".format(mac),
             "name": "Winefridge Upper Compartment",
@@ -40,6 +40,8 @@ async def mqtt():
             "temp_step": 0.5,
             "temp_unit": "C",
             "modes":["off", "cool"],
+            
+            "avty_t": "~/availability",
             
             "mode_cmd_t": "~/command",
             "mode_cmd_tpl": "mode:{{ value }}",
@@ -57,20 +59,26 @@ async def mqtt():
             "curr_temp_tpl": "{{ value_json.current_temp }}",
         }))
         await publish_status()
+        await asyncio.sleep(5)
+
 
 async def publish_status():
+    await client.publish('homeassistant/climate/{}/availability'.format(mac), 'online')
     await client.publish('homeassistant/climate/{}/state'.format(mac), json.dumps(get_state()))
+
+# mac adress
+mac = ubinascii.hexlify(network.WLAN().config('mac')).decode()
 
 # Define configuration
 config['subs_cb'] = sub_cb
 config['wifi_coro'] = wifi_han
 config['connect_coro'] = conn_han
 config['clean'] = True
+config['will'] = ('homeassistant/climate/{}/availability'.format(mac), "offline", True, 1)
 
 # Set up client
 MQTTClient.DEBUG = True  # Optional
 client = MQTTClient(config)
-mac = ubinascii.hexlify(client._sta_if.config('mac')).decode()
 
 init()
 try:

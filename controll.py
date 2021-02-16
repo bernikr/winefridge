@@ -25,6 +25,8 @@ def command(cmd_sting):
     cmd, arg = cmd_sting.split(':')
     if cmd == 'target':
         settings['target'] = float(arg)
+        print('set target to {}'.format(settings['target']))
     if cmd == 'mode':
         settings['on'] = arg == 'cool'
+        print('set on to {}'.format(settings['on']))
     save_settings()
