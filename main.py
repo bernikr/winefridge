@@ -4,6 +4,43 @@ from hass import HassIntegration
 
 settings = None
 
+entity_config = [
+    {
+        'type': 'climate',
+        'settings': {
+            "name": "Winefridge Test",
+            "min_temp": 5,
+            "max_temp": 20,
+            "temp_step": 0.5,
+            "temp_unit": "C",
+            "modes": ["off", "cool"],
+        },
+        'states': {
+            'mode_stat': 'mode',
+            'temp_stat': 'target_temp',
+            'curr_temp': 'current_temp',
+        },
+        'commands': {
+            'mode': 'mode',
+            'temp': 'target',
+        }
+    },
+    {
+        'type': 'sensor',
+        'settings': {
+            "name": "Winefridge Test2",
+        },
+        'states': {
+            'stat': 'target_temp',
+        }
+    }
+]
+
+device_info = {
+    "name": "Wine Fridge",
+    "mf": "homemade",
+}
+
 
 def main():
     global settings
@@ -13,7 +50,7 @@ def main():
     except (OSError, ValueError) as e:
         settings = {'on': False, 'target': 10}
         save_settings()
-    hass = HassIntegration(get_state, command)
+    hass = HassIntegration(entity_config, device_info, get_state, command)
     hass.run()
 
 
